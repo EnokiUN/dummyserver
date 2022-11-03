@@ -18,11 +18,10 @@ FROM debian:buster-slim
 
 COPY --from=builder /dummyserver/target/release/dummyserver /bin/dummyserver
 
-ARG PORT=8000
+ARG SERVER_ADDRESS=0.0.0.0:8080
 
-EXPOSE $PORT
-ENV ROCKET_ADDRESS 0.0.0.0
-ENV ROCKET_PORT $PORT
+EXPOSE $SERVER_ADDRESS
+ENV SERVER_ADDRESS $SERVER_ADDRESS
 
 ENV RUST_LOG debug
 
