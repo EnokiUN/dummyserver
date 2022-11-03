@@ -17,8 +17,8 @@ struct Request {
 
 fn main() {
     let address = env::var("SERVER_ADDRESS").unwrap_or_else(|_| "127.0.0.1:8080".to_string());
-    let listener =
-        TcpListener::bind(&address).expect(&format!("Could not start TCP server at {}", address));
+    let listener = TcpListener::bind(&address)
+        .unwrap_or_else(|_| panic!("Could not start TCP server at {}", address));
     for stream in listener.incoming() {
         thread::spawn(|| {
             let mut stream = stream.unwrap();
@@ -29,7 +29,7 @@ fn main() {
             let mut headers: Vec<String> = Vec::new();
             let mut headers_done = false;
             buf.read_line(&mut first).unwrap();
-            let mut first = first.split(" ");
+            let mut first = first.split(' ');
             loop {
                 if headers_done {
                     if content_length == 0 {
@@ -49,7 +49,7 @@ fn main() {
                     continue;
                 }
                 if l.starts_with("Content-Length") {
-                    content_length = l.split(" ").nth(1).unwrap().parse().unwrap();
+                    content_length = l.split(' ').nth(1).unwrap().parse().unwrap();
                 }
                 headers.push(l);
             }
