@@ -1,12 +1,14 @@
 use std::{
+    env,
     io::{BufRead, BufReader, Read, Write},
-    net::TcpListener,
+    net::{SocketAddr, TcpListener},
     thread,
 };
 
 #[allow(dead_code)]
 #[derive(Debug)]
 struct Request {
+    peer_addr: Option<SocketAddr>,
     method: String,
     route: String,
     headers: Vec<String>,
@@ -14,7 +16,9 @@ struct Request {
 }
 
 fn main() {
-    let listener = TcpListener::bind("0.0.0.0:8080").unwrap();
+    let address = env::var("SERVER_ADDRESS").unwrap_or_else(|_| "127.0.0.1:8080".to_string());
+    let listener =
+        TcpListener::bind(&address).expect(&format!("Could not start TCP server at {}", address));
     for stream in listener.incoming() {
         thread::spawn(|| {
             let mut stream = stream.unwrap();
@@ -50,6 +54,7 @@ fn main() {
                 headers.push(l);
             }
             let request = Request {
+                peer_addr: stream.peer_addr().ok(),
                 method: first.next().unwrap().to_string(),
                 route: first.next().unwrap().to_string(),
                 headers,
