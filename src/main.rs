@@ -1,4 +1,5 @@
 use std::{
+    collections::HashMap,
     env,
     io::{BufRead, BufReader, Read, Write},
     net::{SocketAddr, TcpListener},
@@ -11,7 +12,7 @@ struct Request {
     peer_addr: Option<SocketAddr>,
     method: String,
     route: String,
-    headers: Vec<String>,
+    headers: HashMap<String, String>,
     body: Option<String>,
 }
 
@@ -26,7 +27,7 @@ fn main() {
             let mut first = String::new();
             let mut content_length = 0;
             let mut body: Option<String> = None;
-            let mut headers: Vec<String> = Vec::new();
+            let mut headers: HashMap<String, String> = HashMap::new();
             let mut headers_done = false;
             buf.read_line(&mut first).unwrap();
             let mut first = first.split(' ');
@@ -48,10 +49,11 @@ fn main() {
                     headers_done = true;
                     continue;
                 }
-                if l.starts_with("Content-Length") {
-                    content_length = l.split(' ').nth(1).unwrap().parse().unwrap();
+                let (header, value) = l.split_once(": ").unwrap();
+                if header == "Content-Length" {
+                    content_length = value.parse().unwrap();
                 }
-                headers.push(l);
+                headers.insert(header.to_string(), value.to_string());
             }
             let request = Request {
                 peer_addr: stream.peer_addr().ok(),
