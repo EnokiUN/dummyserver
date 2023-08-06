@@ -20,7 +20,7 @@ struct Request {
 fn main() {
     let address = env::var("SERVER_ADDRESS").unwrap_or_else(|_| "127.0.0.1:8080".to_string());
     let listener = TcpListener::bind(&address)
-        .unwrap_or_else(|_| panic!("Could not start TCP server at {}", address));
+        .unwrap_or_else(|e| panic!("Could not start TCP server at {}: {}", address, e));
     for stream in listener.incoming() {
         thread::spawn(move || match stream {
             Ok(stream) => {
